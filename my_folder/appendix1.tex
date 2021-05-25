@@ -1,146 +1,865 @@
-\chapter{Краткие инструкции по настройке издательской системы \LaTeX}\label{appendix-MikTeX-TexStudio}							% Заголовок
+\chapter{Код пакета}\label{appendix-1}							% Заголовок
 %\addcontentsline{toc}{chapter}{Second call for chapters to participate in the book Machine learning in analysis of biomedical and socio-economic data}	% Добавляем его в оглавление
+\section{Код установочного скрипта}\label{app-1}
+Файл install\_script.sql:
 
-В SPbPU-BCI-template {\itshape автоматически выставляются необходимые настройки и в исходном тексте шаблона приведены примеры оформления текстово-графических объектов}, поэтому авторам достаточно заполнить имеющийся шаблон текстом главы (статьи), не вдаваясь в детали оформления, описанные далее. Возможный <<быстрый старт>> оформления главы (статьи) под Windows следующий\footnote{Внимание! Пример оформления подстрочной ссылки (сноски).}:
+%\begin{lstlisting}
+\begin{verbatim}
+--CREATE ERROR_TYPES TABLE
+create table errm$error_types (
+code number(5) primary key,
+name varchar2(100 char) unique not null,
+info varchar2(2000 char)
+);
 
-\begin{enumerate}
-	\item Установка полной версии MikTeX  \cite{latex-miktex}.  В процессе установки лучше выставить параметр доустановки пакетов <<на лету>>.
-	
-	\item Установка TexStudio \cite{latex-texstudio}.
-	
-%		\item установка шрифтов PSCyr для работы с TimesNew\-Roman\-PSMT  	\href{https://github.com/AndreyAkinshin/Russian-Phd-LaTeX-Dissertation-Template/blob/master/PSCyr/Windows.md}{по данной инструкции}. В итоговом документе будет, скорее всего, использован Newton.
-	
-%	\item Переименование следующих файлов, где вместо \texttt{AuthorsSur\-names} необходимо подставить фамилии авторов (можно сокращать до первых четырех букв): 
-%	
-%	\begin{enumerate}
-%		\item Основной файл \texttt{Book\_title\_ch\_Authors\-Sur\-names.tex}.
-%		\item Библиография \texttt{biblio\textbackslash{}Book\_title\_bib\_Authors\-Sur\-na\-mes\-.bib}.
-%		\item Пользовательские настройки (при необходимости), \texttt{common\textbackslash{}Book\_\-tit\-le\_ext\_Authors\-Sur\-names.tex}. 
-%	\end{enumerate}
-%	
-%	\item После открытия основного файла \texttt{Book\_title\_ch\_Authors\-Sur\-names.tex} (с новым названием)   переименовать названия по аналогии в следующих командах \texttt{\textbackslash{}input\{\}}:
-%	
-%	\begin{enumerate}
-%		\item \texttt{biblio/Book\_title\_bib\_Authors\-Sur\-names.bib},
-%		\item \texttt{common/Book\_title\_ext\_Authors\-Sur\-names.tex (при необходимости) }.
-%	\end{enumerate}
-%	
-	
-	\item Запуск TexStudio и компиляция \verb|my_chapter.tex| с помощью команды <<Build\&View>> (например, с помощью двойной зелёной стрелки в верхней панели). {\itshape Иногда, для достижения нужного результата необходимо несколько раз скомпилировать документ.}
-	
-	\item В случае, если не отобразилась библиография, можно
-	
-	\begin{itemize}
-		\item воспользоваться командой Tools $\to$ Commands $\to$ Biber, затем запустив Build\&View;
-		
-		\item настроить автоматическое включение библиографии в настройках Options $\to$ Configure TexStudio $\to$ Build $\to$  Build\&View (оставить по умолчанию, если сборка происходит слишком долго): \texttt{txs:///pdflatex | txs:///biber | txs:///pdflatex | txs:///pdflatex | txs:///\-view-pdf}.
-	\end{itemize}
-	
-\end{enumerate}
+create sequence errm$errors_type_seq start with 4 increment by 1;
 
-В случае возникновения ошибок, попробуйте скомпилировать документ до последних действий или внимательно ознакомьтесь с описанием проблемы в log-файле. Бывает полезным переход (по подсказке TexStudio) в нужную строку в pdf-файле или запрос с текстом ошибке в поисковиках. Наиболее вероятной проблемой при первой компиляции может быть отсутствие какого-либо установленного пакета \LaTeX. 
+insert into errm$error_types values (0, 'error', 'Exception');
+insert into errm$error_types values (1, 'warning', 'Warning');
+insert into errm$error_types values (2, 'log', 'Log information');
+insert into errm$error_types values (3, 'critical_error', 'Exceptions that require additional actions');
 
-В случае корректной работы настройки <<установка на лету>> все дополнительные пакеты будут скачиваться и устанавливаться в автоматическом режиме. Если доустановка пакетов осуществляется медленно (несколько пакетов за один запуск компилятора), то можно попробовать установить их в ручном режиме следующим образом:
+--CREATE ERRORS TABLE
+create table errm$errors (
+code number(10) primary key,
+name varchar2(100) unique not null,
+type number(5) default 0 references errm$error_types not null,
+info varchar2(2000) not null,
+usage_comment varchar2(1000),
+create_date date,
+create_by varchar2(100)
+);
+/
 
-\begin{enumerate}[1.]
-	\item Запустите программу: меню $\to$ все программы $\to$ MikTeX $\to$ Maintenance (Admin) $\to$ MiKTeX Package Manager (Admin).
-	\item Пользуясь поиском, убедитесь, что нужный пакет присутствует, но не установлен (если пакет отсутствует воспользуйтесь сначала MiKTeX Update (Admin)).
-	\item Выделив строку с пакетом (возможно выбрать несколько или вообще все неустановленные пакеты), выполните установку Tools $\to$ Install или с помощью контекстного меню.
-	\item После завершения установки запустите программу MiKTeX Settings (Admin).
-	\item Обновите базу данных имен файлов Refresh FNDB.
-\end{enumerate}
+create sequence errm$errors_code_seq start with 5 increment by 1;
 
+create or replace trigger errm$additional_info_biu_trg
+before insert or update
+on errm$errors
+for each row
+begin
+:new.name := lower(:new.name);
+if :old.create_date is null then
+:new.create_date := sysdate;
+:new.create_by := SYS_CONTEXT ('USERENV', 'SESSION_USER');
+end if;
+end errm$additional_info_biu_trg;
 
-Для проверки текста статьи на русском языке полезно также воспользоваться настройками Options $\to$ Configure TexStudio $\to$ Language Checking $\to$  Default Language. Если русский язык <<ru\_RU>> не будет доступен в меню выбора, то необходимо вначале выполнить Import Dictionary, скачав из интернета любой русскоязычный словарь. 
+insert into errm$errors values (0, 'default_error', 0, 'Error has occurred', 'Simple error for tests. Do not use it in production!', null, null);
+insert into errm$errors values (1, 'not_implemented', 0, 'Code not implemented', 'Use when code not yet implemented.', null, null);
+insert into errm$errors values (2, 'default_warning', 1, 'Warning information', 'Simple warning for tests. Do not use it in production!', null, null);
+insert into errm$errors values (3, 'default_log', 2, 'Log information', 'Simple log message for tests. Do not use it in production!', null, null);
+insert into errm$errors values (4, 'critical_error', 3, 'Critical error has occurred', 'Simple critical error for tests. Do not use it in production!', null, null);
 
+--CREATE LOG TABLE
+create table errm$log (
+id number(38) primary key,
+code number(10) references errm$errors not null,
+timestamp timestamp not null,
+message varchar2(1000),
+context varchar2(2000)
+);
 
-%\chapter{\normalfont\normalsize{}Часто задаваемые вопросы (FAQ)}\label{Appendix-FAQ}							% Заголовок
-%%\addcontentsline{toc}{chapter}{Second call for chapters to participate in the book Machine learning in analysis of biomedical and socio-economic data}	% Добавляем его в оглавление
+create sequence errm$log_seq start with 1 increment by 1;
 
+create table errm$parameters (
+name varchar2(50) primary key,
+value varchar2(1000)
+);
 
-Далее приведены формулы \eqref{eq:Pi-app2}, \eqref{eq:Pi-app2-},  \firef{fig:spbpu_hydrotower-app2}, \firef{fig:spbpu_hydrotower-app2-}, \taref{tab:ToyCompare-app2}, \taref{tab:ToyCompare-app2-}.
+insert into errm$parameters values ('MAIL', 'mikl181@yandex.ru');
 
+create or replace trigger errm$parameters_biu_trg
+before insert or update
+on errm$parameters
+for each row
+begin
+:NEW.name := upper(:NEW.name);
+:NEW.value := lower(:NEW.value);
+end errm$parameters_biu_trg;
 
-\begin{equation}% лучше не оставлять пропущенную строку (\par) перед окружениями для избежания лишних отсупов в pdf
-\label{eq:Pi-app2-} % eq - equations, далее название, ch поставлено для избежания дублирования
-\pi \approx 3,141.
-\end{equation}
+create table errm$feature_flags (
+name varchar2(50) primary key,
+value char(1) default '0'
+);
 
-%
-\begin{figure}[ht!] 
-	\center
-	\includegraphics [scale=0.27] {my_folder/images//spbpu_hydrotower}
-	\caption{Вид на гидробашню СПбПУ \cite{spbpu-gallery}} 
-	\label{fig:spbpu_hydrotower-app2-}  
-\end{figure}
+insert into errm$feature_flags values ('ALWAYS_ADD_DEFAULT_CONTEXT', '1');
+insert into errm$feature_flags values ('MAIL_CRITICAL_ERRORS', '0');
+insert into errm$feature_flags values ('LOG_ERRORS_TO_FILE', '1');
+insert into errm$feature_flags values ('LOG_ERRORS_TO_TABLE', '1');
 
-\begin{table} [htbp]% Пример оформления таблицы
-	\centering\small
-	\caption{Представление данных для сквозного примера по ВКР \cite{Peskov2004}}%
-	\label{tab:ToyCompare-app2-}		
-	\begin{tabular}{|l|l|l|l|l|l|}
-		\hline
-		$G$&$m_1$&$m_2$&$m_3$&$m_4$&$K$\\
-		\hline
-		$g_1$&0&1&1&0&1\\ \hline
-		$g_2$&1&2&0&1&1\\ \hline
-		$g_3$&0&1&0&1&1\\ \hline
-		$g_4$&1&2&1&0&2\\ \hline
-		$g_5$&1&1&0&1&2\\ \hline
-		$g_6$&1&1&1&2&2\\ \hline		
-	\end{tabular}	
-	\normalsize% возвращаем шрифт к нормальному
-\end{table}
+create or replace trigger errm$feature_flags_biu_trg
+before insert or update
+on errm$feature_flags
+for each row
+begin
+:NEW.name := upper(:NEW.name);
 
+if (:new.value not in ('0', '1')) then
+raise_application_error(-20000, 'Invalid data');
+end if;
+end errm$feature_flags_biu_trg;
 
+create or replace view errm$most_often_errors as
+with
+total_count as (
+select count(*) cnt
+from ERRM$LOG
+),
+error_count as (
+select code, count(*) cnt
+from ERRM$LOG
+group by code
+)
+select ec.CODE, ec.cnt, e.name, e.TYPE, et.NAME type_name, e.INFO, e.USAGE_COMMENT
+from error_count ec left join ERRM$ERRORS e on ec.CODE = e.CODE left join ERRM$ERROR_TYPES et on e.TYPE = et.CODE
+where cnt > 0.1 * (select cnt from total_count);
 
+create or replace view errm$most_popular_errors as
+with
+error_count as (
+select code, count(*) cnt
+from ERRM$LOG
+group by code
+)
+select ec.CODE, ec.cnt, e.name, e.TYPE, et.NAME type_name, e.INFO, e.USAGE_COMMENT
+from error_count ec left join ERRM$ERRORS e on ec.CODE = e.CODE left join ERRM$ERROR_TYPES et on e.TYPE = et.CODE
+order by ec.cnt desc;
 
-\section{Параграф приложения}\label{app-2-1}							
+create directory errm$log_dir as 'E:/ERRM';
 
-
-\subsection{Название подпараграфа} \label{ch2:subsec-title-abbr} %название по-русски
-
-
-Название подпараграфа оформляется с помощью команды  \texttt{\textbackslash{}subsection\{...\}}.
-
-Использование подподпараграфов в основной части крайне не рекомендуется.
-\subsubsection{Название подподпараграфа}\label{ch2:subsubsec-title-abbr} %название по-русски
-
-\begin{equation}% лучше не оставлять пропущенную строку (\par) перед окружениями для избежания лишних отсупов в pdf
-\label{eq:Pi-app2} % eq - equations, далее название, ch поставлено для избежания дублирования
-\pi \approx 3,141.
-\end{equation}
-%
-%
-\begin{figure}[ht!] 
-	\center
-	\includegraphics [scale=0.27] {my_folder/images//spbpu_hydrotower}
-	\caption{Вид на гидробашню СПбПУ \cite{spbpu-gallery}} 
-	\label{fig:spbpu_hydrotower-app2}  
-\end{figure}
-%
-
-
-
-
-\begin{table}[t!]% Пример оформления таблицы
-	\centering\small
-	\caption{Представление данных для сквозного примера по ВКР \cite{Peskov2004}}%
-	\label{tab:ToyCompare-app2}		
-	\begin{tabular}{|l|l|l|l|l|l|}
-		\hline
-		$G$&$m_1$&$m_2$&$m_3$&$m_4$&$K$\\
-		\hline
-		$g_1$&0&1&1&0&1\\ \hline
-		$g_2$&1&2&0&1&1\\ \hline
-		$g_3$&0&1&0&1&1\\ \hline
-		$g_4$&1&2&1&0&2\\ \hline
-		$g_5$&1&1&0&1&2\\ \hline
-		$g_6$&1&1&1&2&2\\ \hline		
-	\end{tabular}	
-	\normalsize% возвращаем шрифт к нормальному
-\end{table}
+@@errm.pks
+@@errm.pkb
+\end{verbatim}
 
 
-%% В случае, когда таблица (рисунок) размещаются на последней странице, для переноса названия приложения на новую строку используем:
-\NewPage % начать новое приложение с новой страницы 
+\section{Код спецификации пакета}\label{app-2}
+Файл errm.pks:
+
+\begin{verbatim}
+create or replace package errm
+is
+--CONSTANTS
+feature_mail_critical_errors constant varchar2(50 char) := 'MAIL_CRITICAL_ERRORS';
+feature_log_errors_to_file constant varchar2(50 char) := 'LOG_ERRORS_TO_FILE';
+feature_log_errors_to_table constant varchar2(50 char) := 'LOG_ERRORS_TO_TABLE';
+feature_add_default_context constant varchar2(50 char) := 'ALWAYS_ADD_DEFAULT_CONTEXT';
+
+parameter_mail constant varchar2(50 char) := 'MAIL';
+
+--TYPES
+subtype t_err_code is pls_integer;
+subtype t_err_name is varchar2(100 char);
+subtype t_err_type is pls_integer;
+
+--PARAMETERS WORK
+function get_feature_value(p_feature_name in varchar2) return boolean;
+procedure set_feature_value(p_feature_name in varchar2, p_value in BOOLEAN);
+
+function get_parameter_value(p_param_name in varchar2) return varchar2;
+procedure set_parameter_value(p_param_name in varchar2, p_value in varchar2);
+
+--HELPERS
+function get_error_code(p_name in t_err_name) return t_err_code;
+
+--PROCEDURE AND FUNCTIONS
+procedure register_error(p_code in t_err_code := null, p_name in t_err_name, p_type t_err_type := 0, p_info in varchar2, p_comment in varchar2 := null);
+
+procedure add_default_context;
+procedure add_context(p_name in varchar2, p_value in varchar2);
+procedure clear_context;
+
+procedure raise(p_code in t_err_code, p_log_enabled in boolean := TRUE);
+procedure raise(p_name in t_err_name, p_log_enabled in boolean := TRUE);
+
+--SILENT RAISES
+procedure sraise(p_code in t_err_code);
+procedure sraise(p_name in t_err_name);
+
+--LOG WORK
+procedure clear_log_table;
+procedure clear_log_file;
+
+--SIMPLE ERRORS RAISE
+procedure default_error;
+procedure default_log;
+procedure default_warning;
+procedure critical_error;
+procedure not_implemented_exception;
+
+--LOG
+procedure log (p_text in varchar2);
+procedure nl;
+end errm;
+/
+\end{verbatim}
+
+\section{Код тела пакета}\label{app-3}
+Файл errm.pkb:
+
+\begin{verbatim}
+create or replace package body errm
+is
+--CONSTANTS
+
+c_default_error constant pls_integer := -20000;
+--New line symbol
+c_nl constant char(1) := chr(10);
+
+
+--TYPES
+
+TYPE t_context IS TABLE OF VARCHAR2(100) INDEX BY VARCHAR2(100);
+
+--VARIABLES
+
+g_context t_context;
+
+--PARAMETERS WORK
+
+function get_feature_value(p_feature_name varchar2)
+return boolean
+is
+l_value errm$feature_flags.value%type;
+begin
+select value
+into l_value
+from ERRM$FEATURE_FLAGS
+where NAME = upper(p_feature_name);
+
+return l_value = '1';
+end get_feature_value;
+
+procedure set_feature_value(p_feature_name varchar2, p_value BOOLEAN)
+is
+pragma autonomous_transaction;
+begin
+
+if p_value then
+update ERRM$FEATURE_FLAGS
+set value = '1'
+where NAME = upper(p_feature_name);
+else
+update ERRM$FEATURE_FLAGS
+set value = '0'
+where NAME = upper(p_feature_name);
+end if;
+
+if sql%rowcount = 0 then
+raise no_data_found;
+end if;
+commit;
+end set_feature_value;
+
+function get_parameter_value(p_param_name varchar2)
+return varchar2
+is
+l_value ERRM$PARAMETERS.value%type;
+begin
+select value
+into l_value
+from ERRM$PARAMETERS
+where NAME = upper(p_param_name);
+
+return l_value;
+end get_parameter_value;
+
+procedure set_parameter_value(p_param_name varchar2, p_value varchar2)
+is
+pragma autonomous_transaction;
+begin
+update ERRM$PARAMETERS
+set value = lower(p_value)
+where NAME = upper(p_param_name);
+
+if sql%rowcount = 0 then
+raise no_data_found;
+end if;
+commit;
+end set_parameter_value;
+
+
+--HELPERS
+
+procedure reset_seq(p_seq_name in varchar2)
+is
+pragma autonomous_transaction;
+l_val number;
+begin
+--Hack from AskTom for reset sequence
+execute immediate 'select ' || p_seq_name || '.nextval from dual' INTO l_val;
+execute immediate 'alter sequence ' || p_seq_name || ' increment by -' || l_val || ' minvalue 0';
+execute immediate 'select ' || p_seq_name || '.nextval from dual' INTO l_val;
+execute immediate 'alter sequence ' || p_seq_name || ' increment by 1 minvalue 0';
+end reset_seq;
+
+procedure add_default_context
+is
+begin
+add_context('instance', SYS_CONTEXT ('USERENV', 'INSTANCE_NAME'));
+add_context('db_name', SYS_CONTEXT ('USERENV', 'DB_NAME'));
+add_context('user_name', SYS_CONTEXT ('USERENV', 'SESSION_USER'));
+add_context('module', SYS_CONTEXT ('USERENV', 'MODULE'));
+add_context('current_schema', SYS_CONTEXT ('USERENV', 'CURRENT_SCHEMA'));
+add_context('host', SYS_CONTEXT ('USERENV', 'HOST'));
+end add_default_context;
+
+procedure add_context(p_name in varchar2, p_value in varchar2)
+is
+begin
+g_context(p_name) := p_value;
+end add_context;
+
+procedure clear_context
+is
+begin
+g_context.DELETE();
+end clear_context;
+
+function get_error_info(p_code in t_err_code)
+return errm$errors%rowtype
+is
+l_error errm$errors%rowtype;
+begin
+select *
+into l_error
+from ERRM$ERRORS
+where code = p_code;
+
+return l_error;
+end get_error_info;
+
+function get_context_string(p_use_tab boolean := true)
+return varchar2
+is
+l_index   varchar2(100);
+l_context varchar2(1000);
+begin
+if get_feature_value(errm.FEATURE_ADD_DEFAULT_CONTEXT) then
+add_default_context();
+end if;
+
+if g_context.COUNT = 0 then
+return null;
+end if;
+
+l_index := g_context.FIRST;
+
+while l_index is not null
+loop
+l_context := l_context || case when p_use_tab then '    ' else '' end || l_index || ': ' || g_context(l_index) || c_nl;
+l_index := g_context.next(l_index);
+end loop;
+
+return l_context;
+end get_context_string;
+
+function get_error_message(p_code in t_err_code)
+return varchar2
+is
+r_error_instance errm$errors%rowtype;
+l_error_typename errm$error_types.name%type;
+l_context varchar2(2000);
+begin
+r_error_instance := get_error_info(p_code);
+
+select name
+into l_error_typename
+from ERRM$ERROR_TYPES
+where code = r_error_instance.TYPE;
+
+l_context := get_context_string();
+
+return  r_error_instance.name || ' (#' || p_code ||')' || c_nl ||
+r_error_instance.info || c_nl ||
+'Type: ' || l_error_typename || c_nl ||
+'Context' ||
+case
+when l_context is null then
+' not provided!'
+else
+': ' || c_nl || l_context
+end
+|| c_nl;
+end get_error_message;
+
+
+procedure log_to_file(p_code in t_err_code)
+is
+l_log UTL_FILE.file_type;
+begin
+if NOT get_feature_value(FEATURE_LOG_ERRORS_TO_FILE) then
+return;
+end if;
+
+l_log := UTL_FILE.FOPEN('ERRM$LOG_DIR', 'log.txt','A'); -- A - append
+UTL_FILE.PUT(l_log, systimestamp || ': ' || get_error_message(p_code));
+UTL_FILE.FCLOSE(l_log);
+end log_to_file;
+
+procedure log_to_table(p_code in t_err_code)
+is
+pragma autonomous_transaction;
+
+l_error errm$errors%rowtype;
+l_message errm$log.message%type;
+l_context errm$log.context%type;
+begin
+if NOT get_feature_value(FEATURE_LOG_ERRORS_TO_TABLE) then
+return;
+end if;
+
+l_error := get_error_info(p_code);
+l_message := get_error_message(p_code);
+l_context := get_context_string(false);
+
+insert into ERRM$LOG values (errm$log_seq.nextval, p_code, systimestamp, l_message, l_context);
+commit;
+end log_to_table;
+
+procedure log_to_mail(p_code in t_err_code)
+is
+l_host varchar2(100);
+l_db_name varchar2(100);
+l_error_instance errm$errors%rowtype;
+l_message varchar2(2000);
+begin
+if NOT get_feature_value(FEATURE_MAIL_CRITICAL_ERRORS) then
+return;
+end if;
+l_error_instance := get_error_info(p_code);
+
+if l_error_instance.TYPE != 4 then
+return;
+end if;
+
+l_host := SYS_CONTEXT ('USERENV', 'HOST');
+l_db_name := SYS_CONTEXT ('USERENV', 'DB_NAME');
+l_message := get_error_message(p_code);
+
+UTL_MAIL.send(
+sender     => l_db_name || '@' || l_host || '.com',
+recipients => get_parameter_value(errm.PARAMETER_MAIL),
+subject    => l_error_instance.NAME || ' has occurred on ' || l_db_name || '/' || l_host,
+message    => l_message);
+end log_to_mail;
+
+procedure log_error(p_code in t_err_code)
+is
+begin
+log_to_table(p_code);
+log_to_file(p_code);
+log_to_mail(p_code);
+end log_error;
+
+function get_error_code(p_name in t_err_name)
+return t_err_code
+is
+l_err_code t_err_code;
+begin
+select code
+into l_err_code
+from errm$errors
+where lower(name) = lower(p_name);
+
+return l_err_code;
+end get_error_code;
+
+
+--PROCEDURE AND FUNCTIONS
+
+procedure register_error(p_code in t_err_code := null, p_name in t_err_name, p_type t_err_type := 0, p_info in varchar2, p_comment in varchar2)
+is
+pragma autonomous_transaction;
+begin
+insert into ERRM$ERRORS
+values (NVL(p_code, errm$errors_code_seq.nextval), lower(p_name), p_type, p_info, p_comment, null, null);
+commit;
+end register_error;
+
+
+procedure raise(p_code in t_err_code, p_log_enabled in boolean := TRUE)
+is
+l_message varchar2(2000);
+begin
+if p_log_enabled then
+log_error(p_code);
+end if;
+
+l_message := get_error_message(p_code);
+
+clear_context();
+raise_application_error(c_default_error, l_message);
+end raise;
+
+procedure raise(p_name in t_err_name, p_log_enabled in boolean := TRUE)
+is
+l_err_code t_err_code;
+begin
+l_err_code := get_error_code(p_name);
+errm.raise(l_err_code, p_log_enabled);
+end raise;
+
+procedure sraise(p_code in t_err_code)
+is
+begin
+errm.raise(p_code, FALSE);
+end sraise;
+
+procedure sraise(p_name in t_err_name)
+is
+begin
+errm.raise(p_name, FALSE);
+end sraise;
+
+
+--LOG WORK
+
+procedure clear_log_table
+is
+pragma autonomous_transaction;
+begin
+execute immediate 'truncate table errm$log';
+
+--We can't drop and recreate our sequence, because package should be compiled again
+reset_seq('ERRM$LOG_SEQ');
+end clear_log_table;
+
+procedure clear_log_file
+is
+l_log UTL_FILE.file_type;
+begin
+l_log := UTL_FILE.FOPEN('ERRM$LOG_DIR', 'log.txt','W');
+UTL_FILE.FCLOSE(l_log);
+end clear_log_file;
+
+--EASE ERRORS RAISE
+
+procedure default_error
+is
+begin
+errm.raise(0);
+end default_error;
+
+procedure not_implemented_exception
+is
+begin
+errm.raise(1);
+end not_implemented_exception;
+
+procedure default_warning
+is
+begin
+errm.raise(2);
+end default_warning;
+
+procedure default_log
+is
+begin
+errm.raise(3);
+end default_log;
+
+procedure critical_error
+is
+begin
+errm.raise(4);
+end critical_error;
+
+
+--LOG
+
+procedure log (p_text in varchar2)
+is
+begin
+dbms_output.put_line(p_text);
+end log;
+
+procedure nl
+is
+begin
+dbms_output.new_line;
+end nl;
+end errm;
+/	
+\end{verbatim}
+
+\section{Код скрипта для удаления}\label{app-4}
+Файл uninstall.sql:
+
+\begin{verbatim}
+drop view ERRM$MOST_OFTEN_ERRORS;
+drop view ERRM$MOST_POPULAR_ERRORS;
+
+drop trigger errm$additional_info_biu_trg;
+drop trigger errm$parameters_biu_trg;
+drop trigger errm$feature_flags_biu_trg;
+
+drop table ERRM$PARAMETERS;
+drop table ERRM$FEATURE_FLAGS;
+
+drop table ERRM$LOG;
+drop table ERRM$ERRORS;
+drop table ERRM$ERROR_TYPES;
+
+drop sequence ERRM$ERRORS_CODE_SEQ;
+drop sequence ERRM$ERRORS_TYPE_SEQ;
+drop sequence ERRM$LOG_SEQ;
+
+drop package ERRM;
+
+drop directory errm$log_dir;
+\end{verbatim}
+
+\section{Файл с инструкциями по установке}\label{app-5}
+Файл readme.txt:
+
+\begin{verbatim}
+Инструкция по установке пакета.
+1. Найти в файле install.sql строку
+create directory errm$log_dir as 'E:/ERRM';
+2. Заменить путь директории на необходимый для хранения фалйов логирования
+3. Настроить пакет UTL_MAIL
+4. Выполнить скрипт install.sql
+5. Прочитать описание параметров и опций
+6. Настроить пакет по своему усмотрению при помощи процедур SET_PARAMETER_VALUE и SET_FEATURE_VALUE
+
+Удаление пакета:
+1. Запустить скрипт uninstall.sql
+\end{verbatim}
+
+\section{Скрипт с примерами использования пакета}\label{app-6}
+Файл examples.sql:
+
+\begin{verbatim}
+--Example 1. Standard exception raise
+declare
+not_implemented_exception EXCEPTION;
+pragma exception_init(not_implemented_exception, -20000);
+begin
+raise not_implemented_exception;
+end;
+/
+
+--Example 2. Define new error and raise
+begin
+errm.register_error(p_name => 'new_not_implemented', p_info => 'Code not implemented');
+errm.raise('new_not_implemented');
+end;
+/
+
+--Example 3. Raise predefined error
+begin
+errm.not_implemented_exception;
+end;
+/
+
+--Example 4. Using context for save information
+begin
+errm.add_context('local_variable', 'null');
+errm.default_error;
+end;
+/
+
+--Example 5. Silent raise with code
+begin
+errm.sraise(1);
+end;
+/
+
+--Example 6. Silent raise with name
+begin
+errm.sraise('critical_error');
+end;
+/
+
+--Example 7. Raise with name
+begin
+errm.raise('critical_error');
+end;
+/
+
+--Example 8. Raise with error code
+begin
+errm.raise(0);
+end;
+/
+\end{verbatim}
+
+\section{Скрипт для тестирования пакета}\label{app-7}
+Файл test.sql:
+
+\begin{verbatim}
+SET SERVEROUTPUT ON;
+declare
+l_bool_value boolean;
+l_varchar_value varchar2(2000);
+l_int_value pls_integer;
+begin
+--Auto test
+--No data found
+errm.LOG('Test 1');
+begin
+errm.RAISE('code_implemented');
+exception
+when no_data_found then
+errm.LOG('Correct!');
+when others then
+errm.LOG('Error!');
+end;
+
+errm.LOG('Test 2');
+begin
+l_bool_value := errm.GET_FEATURE_VALUE('unknown_feature');
+exception
+when no_data_found then
+errm.LOG('Correct!');
+when others then
+errm.LOG('Error!');
+end;
+
+errm.LOG('Test 3');
+begin
+errm.SET_FEATURE_VALUE('unknown_feature', false);
+exception
+when no_data_found then
+errm.LOG('Correct!');
+when others then
+errm.LOG('Error!');
+end;
+
+errm.LOG('Test 4');
+begin
+l_varchar_value := errm.GET_PARAMETER_VALUE('unknown_parameter');
+exception
+when no_data_found then
+errm.LOG('Correct!');
+when others then
+errm.LOG('Error!');
+end;
+
+errm.LOG('Test 5');
+begin
+errm.SET_PARAMETER_VALUE('unknown_parameter', 'unknown_value');
+exception
+when no_data_found then
+errm.LOG('Correct!');
+when others then
+errm.LOG('Error!');
+end;
+
+errm.LOG('Test 6');
+begin
+l_int_value := errm.GET_ERROR_CODE('unknown_error');
+exception
+when no_data_found then
+errm.LOG('Correct!');
+when others then
+errm.LOG('Error!');
+end;
+
+errm.LOG('Test 7');
+begin
+errm.RAISE(-1);
+exception
+when no_data_found then
+errm.LOG('Correct!');
+when others then
+errm.LOG('Error!');
+end;
+
+errm.LOG('Test 8');
+begin
+errm.RAISE(-1, false);
+exception
+when no_data_found then
+errm.LOG('Correct!');
+when others then
+errm.LOG('Error!');
+end;
+
+errm.LOG('Test 9');
+begin
+errm.RAISE('unknown_error');
+exception
+when no_data_found then
+errm.LOG('Correct!');
+when others then
+errm.LOG('Error!');
+end;
+
+errm.LOG('Test 10');
+begin
+errm.RAISE('unknown_error', false);
+exception
+when no_data_found then
+errm.LOG('Correct!');
+when others then
+errm.LOG('Error!');
+end;
+
+errm.LOG('Test 11');
+begin
+errm.SRAISE(-1);
+exception
+when no_data_found then
+errm.LOG('Correct!');
+when others then
+errm.LOG('Error!');
+end;
+
+errm.LOG('Test 12');
+begin
+errm.SRAISE('unknown_error');
+exception
+when no_data_found then
+errm.LOG('Correct!');
+when others then
+errm.LOG('Error!');
+end;
+
+--Manual test
+--Context added to error
+--     errm.ADD_DEFAULT_CONTEXT;
+--     errm.ADD_CONTEXT('user_context', 'user_value');
+--     errm.DEFAULT_ERROR;
+
+--No context
+--     errm.SET_FEATURE_VALUE(errm.FEATURE_ADD_DEFAULT_CONTEXT, false);
+--     errm.ADD_CONTEXT('user_context', 'user_value');
+--     errm.CLEAR_CONTEXT;
+--     errm.DEFAULT_ERROR;
+
+--Default context
+--     errm.SET_FEATURE_VALUE(errm.FEATURE_ADD_DEFAULT_CONTEXT, true);
+--     errm.ADD_CONTEXT('user_context', 'user_value');
+--     errm.CLEAR_CONTEXT;
+--     errm.DEFAULT_ERROR;
+
+--Table ERRM$LOG should be clean
+--     errm.CLEAR_LOG_TABLE;
+
+--Table ERRM$LOG should be clean
+--     errm.SET_FEATURE_VALUE(errm.FEATURE_LOG_ERRORS_TO_TABLE, false);
+--     errm.DEFAULT_ERROR;
+
+--Correct types for each error
+--     errm.DEFAULT_ERROR;
+--     errm.DEFAULT_LOG;
+--     errm.DEFAULT_WARNING;
+--     errm.NOT_IMPLEMENTED_EXCEPTION;
+--     errm.CRITICAL_ERROR;
+
+--Error occurred
+--     errm.raise('critical_error');
+--     errm.RAISE(4);
+
+--Error occurred with no additional log
+--     errm.SET_FEATURE_VALUE(errm.FEATURE_LOG_ERRORS_TO_TABLE, true);
+--     errm.SRAISE(4);
+
+--Added information to file
+--     errm.SET_FEATURE_VALUE(errm.FEATURE_LOG_ERRORS_TO_FILE, true);
+--     errm.DEFAULT_LOG;
+end;
+/
+\end{verbatim}
